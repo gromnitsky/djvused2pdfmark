@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
 'use strict';
+let {Transform} = require('stream')
 let sexp_parse = require('s-expression')
-let concat = require('concat-stream')
 
-if (require.main === module) {
-    process.stdin.pipe(concat( buf => {
-	process.stdout.write(pdfmark_bookmarks(buf.toString()))
-    }))
+class DjvuBookmarksToPdfmark extends Transform {
+    constructor() { super(); this.chunks = [] }
+    _transform(chk, _enc, done) { this.chunks.push(chk); done() }
+    _flush() { this.push(exports.pdfmark_bookmarks(this.chunks.join``)) }
 }
+exports.DjvuBookmarksToPdfmark = DjvuBookmarksToPdfmark
 
-function pdfmark_bookmarks(str) {
+exports.pdfmark_bookmarks = function(str) {
     let sexp = sexp_parse(str)
     if (sexp instanceof Error) {
 	sexp.message = `${sexp.line}:${sexp.col} ${sexp.message}`
@@ -19,7 +20,9 @@ function pdfmark_bookmarks(str) {
     return walk_and_talk()(sexp.slice(1))
 }
 
-module.exports = pdfmark_bookmarks
+if (require.main === module) {
+    process.stdin.pipe(new DjvuBookmarksToPdfmark()).pipe(process.stdout)
+}
 
 // http://ask.xmodulo.com/add-bookmarks-pdf-document-linux.html
 function walk_and_talk() {

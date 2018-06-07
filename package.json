@@ -4,7 +4,6 @@
     "description": "Convert djvu bookmarks (outline) to pdfmark code",
     "main": "index.js",
     "dependencies": {
-        "concat-stream": "~1.6.2",
         "s-expression": "~3.0.3"
     },
     "keywords": [
@@ -17,5 +16,7 @@
     "author": "Alexander Gromnitsky",
     "repository": "github:gromnitsky/djvu-bookmarks-to-pdfmark",
     "license": "MIT",
-    "bin" : { "djvu-bookmarks-to-pdfmark" : "./index.js" }
+    "bin": {
+        "djvu-bookmarks-to-pdfmark": "./index.js"
+    }
 }
