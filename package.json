@@ -1,13 +1,14 @@
 {
-    "name": "djvu-bookmarks-to-pdfmark",
+    "name": "djvused2pdfmark",
     "version": "0.0.1",
-    "description": "Convert djvu bookmarks (outline) to pdfmark code",
+    "description": "Convert djvu bookmarks (outline) or meta to pdfmark code",
     "main": "index.js",
     "dependencies": {
         "s-expression": "~3.0.3"
     },
     "keywords": [
         "djvu",
+        "djvused",
         "bookmarks",
         "outline",
         "pdfmark",
@@ -17,6 +18,9 @@
     "repository": "github:gromnitsky/djvu-bookmarks-to-pdfmark",
     "license": "MIT",
     "bin": {
-        "djvu-bookmarks-to-pdfmark": "./index.js"
-    }
+        "djvused2pdfmark": "./index.js"
+    },
+    "files": [
+        "index.js"
+    ]
 }

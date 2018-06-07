@@ -4,12 +4,16 @@
 let {Transform} = require('stream')
 let sexp_parse = require('s-expression')
 
-class DjvuBookmarksToPdfmark extends Transform {
-    constructor() { super(); this.chunks = [] }
+class DjvusedToPdfmark extends Transform {
+    constructor(mode = 'bookmarks') {
+	super();
+	this.chunks = []
+	this.converter = exports[`pdfmark_${mode}`]
+    }
     _transform(chk, _enc, done) { this.chunks.push(chk); done() }
-    _flush() { this.push(exports.pdfmark_bookmarks(this.chunks.join``)) }
+    _flush() { this.push(this.converter(this.chunks.join``)) }
 }
-exports.DjvuBookmarksToPdfmark = DjvuBookmarksToPdfmark
+exports.DjvusedToPdfmark = DjvusedToPdfmark
 
 exports.pdfmark_bookmarks = function(str) {
     let sexp = sexp_parse(str)
@@ -20,8 +24,33 @@ exports.pdfmark_bookmarks = function(str) {
     return walk_and_talk()(sexp.slice(1))
 }
 
+exports.pdfmark_meta = function(str) {
+    let date = s => {
+	let d = new Date(s) || new Date()
+	let pad = s => ('0'+s).slice(-2)
+	return `D:${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}` +
+	    ['getUTCDate', 'getUTCHours', 'getUTCMinutes', 'getUTCSeconds'].
+	    map( v => pad(d[v]())).join('')
+    }
+    let tag = (name, val) => {
+	val = val.trim().slice(1, -1)
+	return /^(Creation|Mod)Date$/.test(name) ? date(val) : escape(val)
+    }
+
+    let tags = str.split("\n").filter(v => v.trim().length).map( (line,idx) => {
+	let cols = line.split(/\t/)
+	if (cols.length < 2) throw new Error(`incomplete input: ${line}`)
+	let [name, val] = [cols[0], cols.slice(1).join(' ')]
+	if (!/^[a-zA-Z0-9_-]+$/.test(name))
+	    throw new Error(`${idx+1}: invalid tag name: ${name}`)
+
+	return `/${name} (${tag(name, val)})`
+    })
+    return tags.length ? '[ ' + tags.join`\n  ` + "\n  /DOCINFO pdfmark\n" : ""
+}
+
 if (require.main === module) {
-    process.stdin.pipe(new DjvuBookmarksToPdfmark()).pipe(process.stdout)
+    process.stdin.pipe(new DjvusedToPdfmark(process.argv[2])).pipe(process.stdout)
 }
 
 // http://ask.xmodulo.com/add-bookmarks-pdf-document-linux.html
