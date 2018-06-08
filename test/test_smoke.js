@@ -5,7 +5,7 @@ let assert = require('assert')
 let fs = require('fs')
 let dp = require('..')
 
-suite('Smoke', function() {
+suite('Outline', function() {
     test('empty input', function() {
 	assert.equal(dp.pdfmark_bookmarks(''), '')
 	assert.equal(dp.pdfmark_bookmarks("\n\n\n"), '')
@@ -29,6 +29,35 @@ suite('Smoke', function() {
 [/Page 5 /Title (1.2.1 bbb) /OUT pdfmark
 [/Page 6 /Title (1.3 Baz) /OUT pdfmark
 [/Page 7 /Title (2 Setup) /OUT pdfmark
+`)
+    })
+})
+
+suite('Meta', function() {
+    test('empty input', function() {
+	assert.equal(dp.pdfmark_meta(''), '')
+	assert.equal(dp.pdfmark_meta("\n\n\n"), '')
+    })
+
+    test('broken', function() {
+	assert.throws( () => dp.pdfmark_meta("a"), /incomplete input/)
+	assert.throws( () => dp.pdfmark_meta("a b"), /incomplete input/)
+	assert.throws( () => dp.pdfmark_meta("a a\tc"), /invalid tag name/)
+	assert.throws( () => dp.pdfmark_meta("a\t"), /empty tag value/)
+	assert.throws( () => dp.pdfmark_meta(`a\t""`), /empty tag value/)
+	assert.throws( () => dp.pdfmark_meta(`a\t" "`), /empty tag value/)
+    })
+
+    test('simple', function() {
+	assert.equal(dp.pdfmark_meta(fs.readFileSync(__dirname + '/' + 'meta.txt').toString()), `[ /Author (John Doe\\, Jane Doe)
+  /CreationDate (D:19980101000000)
+  /Creator (Heaven knows)
+  /Producer (A \\(custom makefile!)
+  /Title (Foo Bar)
+  /Subject (An Administrator Guide to Foobar)
+  /Keywords (one\\, two)
+  /ModDate (D:20180101000000)
+  /DOCINFO pdfmark
 `)
     })
 })

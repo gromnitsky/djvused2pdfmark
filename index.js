@@ -33,18 +33,21 @@ exports.pdfmark_meta = function(str) {
 	    map( v => pad(d[v]())).join('')
     }
     let tag = (name, val) => {
-	val = val.trim().slice(1, -1)
+	val = val.trim().slice(1, -1).trim()
 	return /^(Creation|Mod)Date$/.test(name) ? date(val) : escape(val)
     }
 
     let tags = str.split("\n").filter(v => v.trim().length).map( (line,idx) => {
-	let cols = line.split(/\t/)
-	if (cols.length < 2) throw new Error(`incomplete input: ${line}`)
-	let [name, val] = [cols[0], cols.slice(1).join(' ')]
-	if (!/^[a-zA-Z0-9_-]+$/.test(name))
-	    throw new Error(`${idx+1}: invalid tag name: ${name}`)
+	let error = msg => new Error(`${idx+1}: ${msg}`)
 
-	return `/${name} (${tag(name, val)})`
+	let cols = line.split(/\t/)
+	if (cols.length < 2) throw error('incomplete input')
+	let [name, val] = [cols[0], cols.slice(1).join(' ')]
+	if (!/^[\w-]+$/.test(name)) throw error('invalid tag name')
+	let tag_val = tag(name, val)
+	if (!tag_val) throw error('empty tag value')
+
+	return `/${name} (${tag_val})`
     })
     return tags.length ? '[ ' + tags.join`\n  ` + "\n  /DOCINFO pdfmark\n" : ""
 }
