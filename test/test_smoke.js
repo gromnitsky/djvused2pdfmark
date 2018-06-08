@@ -21,6 +21,11 @@ suite('Outline', function() {
 		     "[/Page 2 /Title (q\\,w\\,\\(e\\)) /OUT pdfmark\n")
     })
 
+    test('broken', function() {
+	assert.throws( () => dp.pdfmark_bookmarks('(b ("a"))'), /incomplete input/)
+	assert.throws( () => dp.pdfmark_bookmarks('(b (" " "#1"))'), /empty title/)
+    })
+
     test('multi', function() {
 	assert.equal(dp.pdfmark_bookmarks(fs.readFileSync(__dirname + '/' + 'multi.lisp').toString()), `[/Page 1 /Title (Preface) /OUT pdfmark
 [/Count 3 /Page 2 /Title (1 Introduction) /OUT pdfmark

@@ -60,7 +60,10 @@ if (require.main === module) {
 function walk_and_talk() {
     let pdfmarks = []
     let page = (v) => Number(String(v).slice(1)) || 1
-    let title = (v) => escape(v)
+    let title = v => {
+	v = v.trim(); if (!v) throw new Error('empty title')
+	return escape(v)
+    }
     let bmk = (v) => `/Page ${page(v[1])} /Title (${title(v[0])}) /OUT pdfmark`
 
     return function walk(sexp) {
