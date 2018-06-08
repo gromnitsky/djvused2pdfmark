@@ -15,7 +15,7 @@
         "pdf"
     ],
     "author": "Alexander Gromnitsky",
-    "repository": "github:gromnitsky/djvu-bookmarks-to-pdfmark",
+    "repository": "github:gromnitsky/djvused2pdfmark",
     "license": "MIT",
     "bin": {
         "djvused2pdfmark": "./index.js"
