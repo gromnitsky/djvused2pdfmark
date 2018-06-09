@@ -1,6 +1,6 @@
 {
     "name": "djvused2pdfmark",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Convert djvu bookmarks (outline) or meta to pdfmark code",
     "main": "index.js",
     "dependencies": {
