@@ -3,6 +3,7 @@
 'use strict';
 let {Transform} = require('stream')
 let sexp_parse = require('s-expression')
+let iconv = require('iconv-lite')
 
 class DjvusedToPdfmark extends Transform {
     constructor(mode = 'bookmarks') {
@@ -26,15 +27,16 @@ exports.pdfmark_bookmarks = function(str) {
 
 exports.pdfmark_meta = function(str) {
     let date = s => {
-	let d = new Date(s) || new Date()
+	let d = isNaN(new Date(s)) ? new Date() : new Date(s)
 	let pad = s => ('0'+s).slice(-2)
 	return `D:${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}` +
 	    ['getUTCDate', 'getUTCHours', 'getUTCMinutes', 'getUTCSeconds'].
 	    map( v => pad(d[v]())).join('')
     }
     let tag = (name, val) => {
-	val = val.trim().slice(1, -1).trim()
-	return /^(Creation|Mod)Date$/.test(name) ? date(val) : escape(val)
+	val = val.trim().slice(1, -1).trim(); if (!val) return ''
+	if (/^(Creation|Mod)Date$/.test(name)) val = date(val)
+	return pm_encode(val)
     }
 
     let tags = str.split("\n").filter(v => v.trim().length).map( (line,idx) => {
@@ -47,7 +49,7 @@ exports.pdfmark_meta = function(str) {
 	let tag_val = tag(name, val)
 	if (!tag_val) throw error('empty tag value')
 
-	return `/${name} (${tag_val})`
+	return `/${name} ${tag_val}`
     })
     return tags.length ? '[ ' + tags.join`\n  ` + "\n  /DOCINFO pdfmark\n" : ""
 }
@@ -62,9 +64,9 @@ function walk_and_talk() {
     let page = (v) => Number(String(v).slice(1)) || 1
     let title = v => {
 	v = v.trim(); if (!v) throw new Error('empty title')
-	return escape(v)
+	return pm_encode(v)
     }
-    let bmk = (v) => `/Page ${page(v[1])} /Title (${title(v[0])}) /OUT pdfmark`
+    let bmk = (v) => `/Page ${page(v[1])} /Title ${title(v[0])} /OUT pdfmark`
 
     return function walk(sexp) {
 	for (let val of sexp) {
@@ -80,4 +82,9 @@ function walk_and_talk() {
     }
 }
 
-function escape(s) { return String(s).replace(/[(),\\]/g, '\\$&') }
+function pm_encode(s) {
+    let pm_escape = s => String(s).replace(/[(),\\]/g, '\\$&')
+    let is_printable = s => /^[\x09\x20-\x7E]*$/.test(s)
+
+    return is_printable(s) ? `(${pm_escape(s)})` : '<FEFF' + iconv.encode(pm_escape(s), 'utf16-be').toString('hex').toUpperCase() + '>'
+}

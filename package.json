@@ -4,6 +4,7 @@
     "description": "Convert djvu bookmarks (outline) or meta to pdfmark code",
     "main": "index.js",
     "dependencies": {
+        "iconv-lite": "~0.4.23",
         "s-expression": "~3.0.3"
     },
     "keywords": [

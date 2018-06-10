@@ -51,6 +51,7 @@ suite('Meta', function() {
 	assert.throws( () => dp.pdfmark_meta("a\t"), /empty tag value/)
 	assert.throws( () => dp.pdfmark_meta(`a\t""`), /empty tag value/)
 	assert.throws( () => dp.pdfmark_meta(`a\t" "`), /empty tag value/)
+	assert.throws( () => dp.pdfmark_meta(`ModDate\t" "`), /empty tag value/)
     })
 
     test('simple', function() {
@@ -58,7 +59,7 @@ suite('Meta', function() {
   /CreationDate (D:19980101000000)
   /Creator (Heaven knows)
   /Producer (A \\(custom makefile!)
-  /Title (Foo Bar)
+  /Title <FEFF041A043804570432002000AB042E043D0456043204350440044100BB>
   /Subject (An Administrator Guide to Foobar)
   /Keywords (one\\, two)
   /ModDate (D:20180101000000)
